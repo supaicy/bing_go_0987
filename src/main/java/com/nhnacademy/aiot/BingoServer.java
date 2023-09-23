@@ -38,7 +38,12 @@ public class BingoServer {
 
 
         System.out.println("게임 순서 정하기 시작");
-        server.decideTurn();
+        try {
+            server.decideTurn();
+        } catch (IOException e) {
+           
+            e.printStackTrace();
+        }
         System.out.println("게임 순서 정하기 완료");
 
         System.out.println("게임시작");
@@ -103,9 +108,14 @@ public class BingoServer {
      * 1.우선 입장한 참가자가 우선할 수 있다.
      * 2.두 참가자에게 가위, 바위, 보를 시킬 수 있다.
      * </pre>
+     * @throws IOException
      */
-    public void decideTurn(){
-
+    public void decideTurn() throws IOException{
+        //우선 입장한 참가자 
+        for(int i = 0 ; i < MAXIMUM_PLAYER ; i++){
+            players.get(i).setTurn(i);
+            broadcastMessage( (i+1)+"번 : " + players.get(i).getNickname());
+        }
 
     }
     /**
@@ -139,9 +149,12 @@ public class BingoServer {
      * message를 입력 받아 모든 Player에게 메시지 출력 메서드
      * </pre>
      * @param message
+     * @throws IOException
      */
-    public void broadcastMessage(String message){
-
+    public void broadcastMessage(String message) throws IOException{
+        for (int i = 0; i < MAXIMUM_PLAYER ; i++) {
+            sendMessageToPlayer(players.get(i), message);
+        }
     }
 
     /**
