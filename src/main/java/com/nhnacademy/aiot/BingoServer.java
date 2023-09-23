@@ -42,7 +42,6 @@ public class BingoServer {
         System.out.println("게임 순서 정하기 완료");
 
         System.out.println("게임시작");
-        System.out.println("test");
     }
 
     /**
