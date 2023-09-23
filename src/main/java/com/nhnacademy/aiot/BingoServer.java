@@ -38,7 +38,12 @@ public class BingoServer {
 
 
         System.out.println("게임 순서 정하기 시작");
-        server.decideTurn();
+        try {
+            server.decideTurn();
+        } catch (IOException e) {
+           
+            e.printStackTrace();
+        }
         System.out.println("게임 순서 정하기 완료");
 
         System.out.println("게임시작");
@@ -103,9 +108,14 @@ public class BingoServer {
      * 1.우선 입장한 참가자가 우선할 수 있다.
      * 2.두 참가자에게 가위, 바위, 보를 시킬 수 있다.
      * </pre>
+     * @throws IOException
      */
-    public void decideTurn(){
-
+    public void decideTurn() throws IOException{
+        //우선 입장한 참가자 
+        for(int i = 0 ; i < MAXIMUM_PLAYER ; i++){
+            players.get(i).setTurn(i);
+            broadcastMessage( (i+1)+"번 : " + players.get(i).getNickname());
+        }
 
     }
     /**
@@ -114,10 +124,20 @@ public class BingoServer {
      * 1. 참가자가 번호를 선택하면, 각 참가자의 bingo판에 O 또는 X를 표시하여 출력한다.
      * 2. 참가자는 자신의 bingo판만 볼 수 있다.
      * </pre>
+     * @throws IOException
      */
-    public void printBingoBoard(){
-
+    public void printBingoBoard(Player player) throws IOException {
+        int[][] board = player.getBingoBoard();
+        sendMessageToPlayer(player, "============");
+        for (int i = 0; i < board.length; i++) {
+            StringBuilder sb = new StringBuilder();
+            for (int j = 0; j < board[i].length; j++) {
+                sb.append(board[i][j]);
+         }
+            sendMessageToPlayer(player, sb.toString());
+        }
     }
+    
 
     /**
      * <H3>번호 선택</H3>
@@ -125,23 +145,32 @@ public class BingoServer {
      * 차례가 돌아온 참가자에게는 번호 선택 알림이 출력된다.
      * --선택할 번호는?--
      * </pre>
+     * @throws IOException
      */
-    public void chooseNumber(){
+    public void chooseNumber(Player player) throws IOException{
+        broadcastMessage(player.getNickname() + "님의 차례입니다");
+        sendMessageToPlayer(player, "==번호를 선택해주세요==");
+        //player.getReader().readLine();
 
     }
 
 
 
+
+
     /**
-     * 
+     * 요
      * <H3>모든 플레이어에게 메시지 출력</H3>
      * <pre>
      * message를 입력 받아 모든 Player에게 메시지 출력 메서드
      * </pre>
      * @param message
+     * @throws IOException
      */
-    public void broadcastMessage(String message){
-
+    public void broadcastMessage(String message) throws IOException{
+        for (int i = 0; i < MAXIMUM_PLAYER ; i++) {
+            sendMessageToPlayer(players.get(i), message);
+        }
     }
 
     /**
