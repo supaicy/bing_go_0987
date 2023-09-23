@@ -32,5 +32,9 @@ public class Player {
         
     }
 
+    public void setBingoBoard(int[][] bingoBoard){
+        this.bingoBoard = bingoBoard;
+    }
+
 }
 
