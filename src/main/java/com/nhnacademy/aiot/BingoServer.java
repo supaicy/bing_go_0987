@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -17,11 +18,11 @@ public class BingoServer {
     // 출력 후 색 초기화
     public static final String RESET = "\u001B[0m";
 
-    private final int MAXIMUM_PLAYER = 2;
+    private static final int MAXIMUM_PLAYER = 2;
 
     private final int BOARD_SIZE = 5;
 
-    List<Player> players = new ArrayList<>(MAXIMUM_PLAYER);
+    static List<Player> players = new ArrayList<>(MAXIMUM_PLAYER);
 
     static AtomicInteger playerIndex = new AtomicInteger(0);
 
@@ -92,37 +93,79 @@ public class BingoServer {
      * 4.자신이 선택 숫자는 파란색, 다른 참가자가 선택한 숫자는 붉은색으로 표시한다.
      * </pre>
      */
-    public void initializeGame(Player player) {
+    public void initializeGame() {
 
-        // 여러 명 플레이어가 동시에 실행해야하는 메서드니까 스레드로 만들어야함
+        for(Player player : players){
 
-        int[][] bingoBoard = new int[BOARD_SIZE][BOARD_SIZE];
+            Thread t = new Thread(()->{
 
-        try {
-            sendMessageToPlayer(player, "1부터 25중 배치할 모든 숫자를 차례대로 입력해주세요.");
-            String[] numbers = player.getReader().readLine().split(" ");
+            int[][] bingoBoard = new int[BOARD_SIZE][BOARD_SIZE];
 
-            while (numbers.length != BOARD_SIZE * BOARD_SIZE) {
-                sendMessageToPlayer(player, "입력 오류! 다시 입력해주세요");
-                numbers = player.getReader().readLine().split(" ");
+            try {
+                sendMessageToPlayer(player, "1부터 25중 배치할 모든 숫자를 중복 없이 차례대로 입력해주세요.");
+                String[] numbers = player.getReader().readLine().split(" ");
+                
+                while(!isValidInput(player, numbers)){
+                    numbers = player.getReader().readLine().split(" ");
+                }
+
+                int idx = 0;
+                for (int i = 0; i < BOARD_SIZE; i++) {
+                    for (int j = 0; j < BOARD_SIZE; j++) {
+                        bingoBoard[i][j] = Integer.parseInt(numbers[idx++]);
+                    }
+                }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+
+            player.setBingoBoard(bingoBoard);
+
+        });
+
+        t.start();
+    }
+
+    }
+
+    public boolean isValidInput(Player player, String[] input) {
+        try{
+            // 입력 갯수가 잘못된 경우
+            if(input.length != BOARD_SIZE * BOARD_SIZE) {
+                sendMessageToPlayer(player, "숫자를 정확히 25개 입력해야 합니다. 다시 입력해주세요.");
+                return false;
             }
 
-            // error 처리 필요 :
-            // 중복된 숫자 있는 경우, 숫자 형식이 아닌 경우, 범위를 벗어난 숫자인 경우
-            int idx = 0;
-            for (int i = 0; i < BOARD_SIZE; i++) {
-                for (int j = 0; j < BOARD_SIZE; j++) {
-                    bingoBoard[i][j] = Integer.parseInt(numbers[idx++]);
+            int[] inputNumbers = new int[BOARD_SIZE*BOARD_SIZE];
+            for(int i = 0; i < BOARD_SIZE * BOARD_SIZE ; i++){
+                try{
+                    inputNumbers[i] = Integer.parseInt(input[i]);
+                } catch(NumberFormatException e){
+                    // 숫자 형식이 아닌 경우
+                    sendMessageToPlayer(player, "숫자 형식이 아닙니다. 다시 입력해주세요.");
+                    return false;
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
+            
+            // 중복된 숫자를 입력한 경우
+            if(Arrays.stream(inputNumbers).distinct().toArray().length < BOARD_SIZE*BOARD_SIZE){
+                    sendMessageToPlayer(player, "중복된 숫자를 입력하셨습니다. 다시 입력해주세요.");
+                    return false;
+            }
+            
+            // 범위를 벗어난 숫자가 있는 경우
+            for(int i=0; i<BOARD_SIZE*BOARD_SIZE; i++){
+                if(inputNumbers[i] < 1 || inputNumbers[i] > BOARD_SIZE){
+                    sendMessageToPlayer(player, "범위를 벗어난 숫자가 있습니다. 다시 입력해주세요.");
+                    return false;
+                }
+            }
+        } catch (IOException e){
+
         }
-
-        player.setBingoBoard(bingoBoard);
-
+        return true;
     }
 
     /**
