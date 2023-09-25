@@ -8,7 +8,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class BingoServer {
 
     public static final String FONT_RED = "\u001B[31m";
@@ -28,14 +30,14 @@ public class BingoServer {
         BingoServer server = new BingoServer();
         server.joinPlayer();
 
-        System.out.println("모든 플레이어가 입장");
+        log.info("모든 플레이어가 입장");
 
-        System.out.println("게임 판을 생성합니다");
+        log.info("게임 판을 생성합니다");
         server.initializeGame();
-        System.out.println("게임판 생성 완료");
+        log.info("게임판 생성 완료");
 
 
-        System.out.println("게임 순서 정하기 시작");
+        log.info("게임 순서 정하기 시작");
 
         try {
             server.decideTurn();
@@ -43,9 +45,9 @@ public class BingoServer {
 
             e.printStackTrace();
         }
-        System.out.println("게임 순서 정하기 완료");
+        log.info("게임 순서 정하기 완료");
 
-        System.out.println("게임시작");
+        log.info("게임시작");
         int turn = 0;
         try {
             while (true) {
@@ -67,10 +69,10 @@ public class BingoServer {
             }
         }
         } catch (Exception e) { 
-            System.out.println("연결 에러");
+            log.error("연결 에러");
         }
 
-        System.out.println("게임 종료");
+        log.info("게임 종료");
 
 
     }
