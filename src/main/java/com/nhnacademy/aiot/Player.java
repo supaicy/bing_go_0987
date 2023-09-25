@@ -15,7 +15,6 @@ public class Player {
     private int turn;
     private String nickname;
     private int[][] bingoBoard;
-
     
     private Socket socket;
     private BufferedReader reader;
@@ -31,6 +30,11 @@ public class Player {
         }
         
     }
+
+    public void markNumber(int row, int col, int marker) {
+        this.bingoBoard[row][col] = marker;
+    }
+    
 
 }
 
