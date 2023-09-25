@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -52,23 +53,23 @@ public class BingoServer {
         try {
             while (true) {
 
-            Player currentPlayer = server.players.get(turn);
+                Player currentPlayer = server.players.get(turn);
 
-            try {
-                server.chooseNumber(currentPlayer);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            turn++;
-            if (turn % server.MAXIMUM_PLAYER == 0) {
-                turn = 0;
-            }
+                try {
+                    server.chooseNumber(currentPlayer);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                turn++;
+                if (turn % server.MAXIMUM_PLAYER == 0) {
+                    turn = 0;
+                }
 
-            if (server.isFinished()) {
-                break;
+                if (server.isFinished()) {
+                    break;
+                }
             }
-        }
-        } catch (Exception e) { 
+        } catch (Exception e) {
             log.error("연결 에러");
         }
 
@@ -119,7 +120,7 @@ public class BingoServer {
 
     /**
      * <H3>빙고판 생성</H3>
-     * 
+     *
      * <pre>
      * 1.참가자마다 N x N으로 나뉘어져 있는 bingo판이 주어진다.
      * 2.참가자는 각 칸에 주어진 숫자범위에서 숫자들을 골라 마음대로 배치한다.
@@ -177,10 +178,9 @@ public class BingoServer {
     }
 
 
-
     /**
      * 게임 승리 조건
-     * 
+     *
      * @throws IOException
      */
     public boolean isFinished() throws IOException {
@@ -198,8 +198,6 @@ public class BingoServer {
                 int colCount = 0;
 
                 // 대각선 정답 확인
-
-
                 if (bingoBoard[i][i] <= 0) {
                     leftDiagCount++;
                 }
@@ -227,7 +225,6 @@ public class BingoServer {
             }
 
 
-
         }
 
         if (winCount == MAXIMUM_PLAYER) {
@@ -244,14 +241,14 @@ public class BingoServer {
 
     /**
      * <H3>게임순서 정하기</H3>
-     * 
+     *
      * <pre>
      * 두 참가자의 배치가 끝나면 서버에서는 게임 시작을 위해 먼저할 참가자를 정한다.
      * (선택사항?)
      * 1.우선 입장한 참가자가 우선할 수 있다.
      * 2.두 참가자에게 가위, 바위, 보를 시킬 수 있다.
      * </pre>
-     * 
+     *
      * @throws IOException
      */
     public void decideTurn() throws IOException {
@@ -260,24 +257,23 @@ public class BingoServer {
             players.get(i).setTurn(i);
             broadcastMessage((i + 1) + "번 : " + players.get(i).getNickname());
         }
-
     }
 
     /**
      * <H3>빙고판 출력</H3>
-     * 
+     *
      * <pre>
      * 1. 참가자가 번호를 선택하면, 각 참가자의 bingo판에 O 또는 X를 표시하여 출력한다.
      * 2. 참가자는 자신의 bingo판만 볼 수 있다.
      * </pre>
-     * 
+     *
      * @throws IOException
      */
     public void printBingoBoard(Player player) throws IOException {
         int[][] board = player.getBingoBoard();
         sendMessageToPlayer(player, " ================");
         for (int i = 0; i < board.length; i++) {
-            
+
             StringBuilder sb = new StringBuilder();
             sb.append("| ");
             for (int j = 0; j < board[i].length; j++) {
@@ -293,20 +289,20 @@ public class BingoServer {
                     }
                 }
             }
-            sendMessageToPlayer(player, sb.toString()+ "|");
+            sendMessageToPlayer(player, sb.toString() + "|");
         }
-         sendMessageToPlayer(player, " ================");
+        sendMessageToPlayer(player, " ================");
     }
 
 
     /**
      * <H3>번호 선택</H3>
-     * 
+     *
      * <pre>
      * 차례가 돌아온 참가자에게는 번호 선택 알림이 출력된다.
      * --선택할 번호는?--
      * </pre>
-     * 
+     *
      * @throws IOException
      */
     public void chooseNumber(Player player) throws IOException {
@@ -351,7 +347,7 @@ public class BingoServer {
         for (int row = 0; row < bingoBoard.length; row++) {
             for (int col = 0; col < bingoBoard.length; col++) {
                 if (bingoBoard[row][col] == number) {
-                    return new int[] {row, col, -1}; // 번호가 있다면 row, col 반환
+                    return new int[]{row, col, -1}; // 번호가 있다면 row, col 반환
                 }
             }
         }
@@ -359,15 +355,14 @@ public class BingoServer {
     }
 
 
-
     /**
      * 요
      * <H3>모든 플레이어에게 메시지 출력</H3>
-     * 
+     *
      * <pre>
      * message를 입력 받아 모든 Player에게 메시지 출력 메서드
      * </pre>
-     * 
+     *
      * @param message
      * @throws IOException
      */
@@ -379,11 +374,11 @@ public class BingoServer {
 
     /**
      * <H3>한 명의 플레이어에게 메시지 출력</H3>
-     * 
+     *
      * <pre>
      * Player와 message를 입력 받아 해당 Player게 메시지 출력 메서드
      * </pre>
-     * 
+     *
      * @param player
      * @param message
      * @throws IOException
@@ -392,7 +387,6 @@ public class BingoServer {
         player.getWriter().write(message + System.lineSeparator());
         player.getWriter().flush();
     }
-
 
 
     public boolean isValidInput(Player player, String[] input) {

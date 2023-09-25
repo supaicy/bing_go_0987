@@ -34,7 +34,6 @@ public class Player {
     public void markNumber(int row, int col, int marker) {
         this.bingoBoard[row][col] = marker;
     }
-    
 
 }
 
